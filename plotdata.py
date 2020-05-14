@@ -4,7 +4,6 @@ Created on Tue Oct 29 20:24:10 2019
 
 @author: RanjaniSubramanyan
 """
-# CATEGORISE Age, Fare and then plot. May get some conclusive insights
 # import statements
 import pandas as pd
 import seaborn as sns
@@ -13,6 +12,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 import csv
+import xgboost as xgb
 #%%
 # read input data in csv format
 train_data = pd.read_csv('train.csv')
@@ -27,9 +27,9 @@ sums = train_data.Survived.groupby(train_data.Sex).sum()
 plt.axis('equal')
 plt.pie(sums, labels=sums.index)
 #%%
-sns.catplot(x="Survived", y="Age", hue="Sex", kind="swarm", data=train_data)
-sns.catplot(x="Survived", y="Fare", hue="Sex", kind="swarm", data=train_data)
-sns.catplot(x="Survived", y="Pclass", hue="Sex", kind="swarm", data=train_data)
+#sns.catplot(x="Survived", y="Age", hue="Sex", kind="swarm", data=train_data)
+#sns.catplot(x="Survived", y="Fare", hue="Sex", kind="swarm", data=train_data)
+#sns.catplot(x="Survived", y="Pclass", hue="Sex", kind="swarm", data=train_data)
 #%%
 female = train_data.loc[(train_data["Sex"]=="female"), ["Sex"]]
 print("# of female in Titanic : {}".format(len(female)))
@@ -64,14 +64,21 @@ y = train_data['Survived']
 X = train_data.drop(['Survived'], axis=1)
 print(X.shape, y.shape)
 #%%
+"""Random forest classifier"""
 X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.33, random_state=42)
 clf = RandomForestClassifier(random_state=0, n_estimators=30, criterion='gini', max_depth=5)
 clf.fit(X_train, y_train)
 y_pred = clf.predict(X_val)
 print(accuracy_score(y_val, y_pred))
 #%%
+"""XGBOOST"""
+xgb = xgb.XGBClassifier(n_estimators=100, max_depth=7)
+xgb.fit(X_train, y_train)
+y_pred_xgb = xgb.predict(X_val)
+print(accuracy_score(y_val, y_pred_xgb))
+#%%
 y_test_pred = pd.DataFrame(clf.predict(test_data), columns=['Survived'])
 #%%
 final_submission = pd.concat([passengerId, y_test_pred], axis=1)
 print(final_submission.shape)
-final_submission.to_csv('submission.csv', sep = ',', index = False, quoting=csv.QUOTE_ALL)
+final_submission.to_csv('submission_.csv', sep = ',', index = False, quoting=csv.QUOTE_ALL)
